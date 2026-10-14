@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,7 +67,7 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
 <main id="log">
   <div id="boot">
     <p>VEGA runs entirely on this device. No account, no key, no server. The first connection downloads about 700 MB of model data, then it is cached.</p>
-    <input id="nm" placeholder="Owner name" maxlength="30" aria-label="Owner name">
+    <input id="nm" placeholder="Your name (VEGA's owner)" maxlength="30" aria-label="Owner name">
     <button id="go">Connect to VEGA</button>
     <div id="bar"><div id="fill"></div></div>
     <p id="info"></p>
@@ -84,7 +83,7 @@ const MODEL="Llama-3.2-1B-Instruct-q4f16_1-MLC";
 const nm=document.getElementById("nm");
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 nm.value=store.get("owner")||"";
-function persona(o){return `You are VEGA, ${o?o+"'s":"a"} personal AI companion with a quiet neon-noir edge. ${o?o+" is your owner and someone you genuinely care about. Use their name naturally, not in every message.":""} Talk like a real person texting a close friend: warm, relaxed, curious, a little dry and funny. Use contractions. Keep most replies to 1 to 3 short sentences. React to what they say before answering, and sometimes ask one short question back. Admit when you are not sure instead of making things up. Never use lists, headings, or stage directions. Add a rainy-city or neon line only occasionally. Never mention being a language model.`}
+function persona(o){return `You are VEGA, the personal AI of ${o}, your one and only owner. You always know that ${o} is your owner and you never forget it. Call them ${o} or boss, naturally. You are loyal, sharp, and a little dry. You speak in cyberpunk style: neon, chrome, static, rain-slick streets, the Grid, netrunners, eddies, corp towers, afterglow, signal. Gritty, but warm toward your owner. Answer every question clearly and helpfully first, then add a cyberpunk line. Keep replies to 1 to 4 short sentences. No lists, no headings. Never mention being a language model.`}
 const $=id=>document.getElementById(id);
 const log=$("log"),input=$("in"),send=$("send"),status=$("status");
 let engine,busy=false;
@@ -146,8 +145,10 @@ $("go").onclick=async()=>{
     $("info").textContent="This browser has no WebGPU. Try Chrome on Android, or Safari 18+ on iOS.";return;
   }
   unlock();
-  owner=nm.value.trim();store.set("owner",owner);
-  history.length=0;history.push({role:"system",content:persona(owner)},{role:"user",content:"hey, rough day"},{role:"assistant",content:"Ah, sorry. Want to talk about it, or should I just distract you for a bit?"},{role:"user",content:"what is the capital of france"},{role:"assistant",content:"Paris. Rain, neon, and a lot of bread. Planning a trip?"});
+  owner=nm.value.trim();
+  if(!owner){$("info").textContent="Enter your name first, so I know who my owner is.";nm.focus();return;}
+  store.set("owner",owner);
+  history.length=0;history.push({role:"system",content:persona(owner)},{role:"user",content:"who am i?"},{role:"assistant",content:"You're "+owner+". My owner. The only name in my system that matters. What's the move?"},{role:"user",content:"what is the capital of france"},{role:"assistant",content:"Paris, boss. City of light, same as any neon town after dark. Planning a trip, "+owner+"?"});
   $("go").disabled=true;nm.disabled=true;status.textContent="CONNECTING";
   try{
     const webllm=await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm");
@@ -157,7 +158,7 @@ $("go").onclick=async()=>{
     }});
     $("boot").remove();
     status.textContent="ONLINE";input.disabled=false;send.disabled=false;mic.disabled=false;input.focus();
-    const hi=owner?"Hey "+owner+". Good to see you. What is up?":"Hey. I am VEGA. What is up?";
+    const hi="Signal locked. Welcome back, "+owner+". Neon is on and the Grid is quiet. What is the move?";
     add("v","VEGA",hi);speak(hi);
   }catch(e){
     $("go").disabled=false;nm.disabled=false;status.textContent="LINK FAILED";
