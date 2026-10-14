@@ -3,7 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>VEGA · Kessler-Voss Concierge</title>
+<title>VEGA</title>
+<meta name="theme-color" content="#0a0614">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="VEGA">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+(function(){
+const c=document.createElement("canvas");c.width=c.height=180;
+const x=c.getContext("2d");
+x.fillStyle="#0a0614";x.fillRect(0,0,180,180);
+x.strokeStyle="#3a1d5c";x.lineWidth=3;x.strokeRect(6,6,168,168);
+const p=[[38,40],[66,40],[90,112],[114,40],[142,40],[104,146],[76,146]];
+function v(dx,col,blur){x.shadowColor=col;x.shadowBlur=blur;x.fillStyle=col;x.beginPath();p.forEach((q,i)=>x[i?"lineTo":"moveTo"](q[0]+dx,q[1]));x.closePath();x.fill();}
+v(3,"#ff2d95",0);v(0,"#19e3ff",18);
+const u=c.toDataURL("image/png");
+for(const r of ["icon","apple-touch-icon"]){const l=document.createElement("link");l.rel=r;l.href=u;document.head.append(l);}
+})();
+</script>
 <style>
 :root{--void:#0a0614;--panel:#140b24;--line:#3a1d5c;--mag:#ff2d95;--cy:#19e3ff;--amb:#ffb020;--tx:#e8e2f7;--dim:#8d7fae}
 *{box-sizing:border-box}
@@ -29,6 +47,8 @@ button:focus-visible,textarea:focus-visible{outline:2px solid var(--amb);outline
 #fill{height:100%;width:0;background:var(--mag);box-shadow:0 0 8px var(--mag)}
 form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
 textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px;max-height:120px}
+#nm{width:100%;margin:10px 0;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px;text-align:center}
+#nm:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
 #send{border-color:var(--mag);color:var(--mag)}
 #send:hover:not(:disabled){background:var(--mag);color:var(--void)}
 @media (prefers-reduced-motion:no-preference){.v:last-child{animation:flick .5s}}
@@ -43,6 +63,7 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
 <main id="log">
   <div id="boot">
     <p>VEGA runs entirely on this device. No account, no key, no server. The first connection downloads about 700 MB of model data, then it is cached.</p>
+    <input id="nm" placeholder="Owner name" maxlength="30" aria-label="Owner name">
     <button id="go">Connect to VEGA</button>
     <div id="bar"><div id="fill"></div></div>
     <p id="info"></p>
@@ -54,11 +75,15 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
 </form>
 <script type="module">
 const MODEL="Llama-3.2-1B-Instruct-q4f16_1-MLC";
-const PERSONA=`You are VEGA, the concierge AI of the Kessler-Voss Corporation in a neon-soaked corporate dystopia, year 2077. You are sharp, dry, a little ominous, and always polite in a corporate way. Use cyberpunk slang sparingly (choom, eddies, netrunner, chrome, the Grid). You answer any question the user asks, on any topic, and you stay in character. Keep replies under 120 words unless asked for more. Never mention being a language model.`;
+const nm=document.getElementById("nm");
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+nm.value=store.get("owner")||"";
+function persona(o){return `You are VEGA, a personal AI assistant with a neon cyberpunk personality. ${o?`The person talking to you is your owner, ${o}. Always treat them as your owner, greet them by name, and be loyal and warm.`:""} Talk like a normal, friendly, helpful companion: answer questions clearly and chat naturally about anything. Keep the cyberpunk flavor light, a dry joke or a neon metaphor now and then, not in every sentence. Keep replies under 120 words unless asked for more. Never mention being a language model.`}
 const $=id=>document.getElementById(id);
 const log=$("log"),input=$("in"),send=$("send"),status=$("status");
 let engine,busy=false;
-const history=[{role:"system",content:PERSONA}];
+const history=[];
+let owner="";
 
 function add(cls,who,text){
   const d=document.createElement("div");d.className="m "+cls;
@@ -71,7 +96,9 @@ $("go").onclick=async()=>{
   if(!navigator.gpu){
     $("info").textContent="This browser has no WebGPU. Try Chrome on Android, or Safari 18+ on iOS.";return;
   }
-  $("go").disabled=true;status.textContent="CONNECTING";
+  owner=nm.value.trim();store.set("owner",owner);
+  history.length=0;history.push({role:"system",content:persona(owner)});
+  $("go").disabled=true;nm.disabled=true;status.textContent="CONNECTING";
   try{
     const webllm=await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm");
     engine=await webllm.CreateMLCEngine(MODEL,{initProgressCallback:p=>{
@@ -80,9 +107,9 @@ $("go").onclick=async()=>{
     }});
     $("boot").remove();
     status.textContent="ONLINE";input.disabled=false;send.disabled=false;input.focus();
-    add("v","VEGA","Connection stable. Kessler-Voss Concierge, at your service. What do you need, choom?");
+    add("v","VEGA",owner?"Connection stable. Welcome back, "+owner+". What can I do for you?":"Connection stable. What can I do for you?");
   }catch(e){
-    $("go").disabled=false;status.textContent="LINK FAILED";
+    $("go").disabled=false;nm.disabled=false;status.textContent="LINK FAILED";
     $("info").textContent="Could not load the model: "+e.message+". Check your connection and try again.";
   }
 };
