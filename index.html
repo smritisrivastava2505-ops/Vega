@@ -26,12 +26,14 @@ for(const r of ["icon","apple-touch-icon"]){const l=document.createElement("link
 :root{--void:#0a0614;--panel:#140b24;--line:#3a1d5c;--mag:#ff2d95;--cy:#19e3ff;--amb:#ffb020;--tx:#e8e2f7;--dim:#8d7fae}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
+body{height:100dvh}
+:root{--pad:max(16px,calc((100vw - 820px)/2))}
 body{background-color:var(--void);
 background-image:linear-gradient(rgba(25,227,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,45,149,.05) 1px,transparent 1px),radial-gradient(ellipse at 50% 0,#2a0f4d 0,var(--void) 65%);
 background-size:100% 32px,32px 100%,100% 100%;
 color:var(--tx);font:16px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0 1px,transparent 1px 3px)}
-header{padding:14px 16px;border-bottom:1px solid var(--cy);box-shadow:0 2px 18px rgba(25,227,255,.25);display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(10,6,20,.85)}
+header{padding:14px var(--pad);border-bottom:1px solid var(--cy);box-shadow:0 2px 18px rgba(25,227,255,.25);display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(10,6,20,.85)}
 h1{position:relative;margin:0;font-size:26px;letter-spacing:.22em;color:var(--cy);text-shadow:0 0 14px var(--cy)}
 h1::before,h1::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;overflow:hidden}
 h1::before{color:var(--mag);transform:translate(2px,0);clip-path:inset(0 0 55% 0)}
@@ -43,7 +45,7 @@ h1::after{color:#fff;transform:translate(-2px,0);clip-path:inset(55% 0 0 0);opac
 .right{text-align:right}
 #status{font-size:12px;letter-spacing:.14em;color:var(--amb)}
 #status.on{color:var(--cy);text-shadow:0 0 8px var(--cy)}
-#log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+#log{flex:1;overflow-y:auto;padding:16px var(--pad);display:flex;flex-direction:column;gap:14px}
 .m{max-width:88%;padding:10px 12px;background:var(--panel);border:1px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
 .v{border-left:4px solid var(--cy);box-shadow:0 0 16px rgba(25,227,255,.22)}
 .u{align-self:flex-end;border-right:4px solid var(--mag);box-shadow:0 0 16px rgba(255,45,149,.22)}
@@ -60,10 +62,12 @@ button:focus-visible,textarea:focus-visible,#nm:focus-visible{outline:2px solid 
 #bar{height:4px;background:var(--line);margin-top:14px}
 #fill{height:100%;width:0;background:var(--mag);box-shadow:0 0 8px var(--mag)}
 #info{font-size:12px;text-align:left;word-break:break-word}
-form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--mag);background:rgba(10,6,20,.85)}
+form{display:flex;gap:8px;padding:12px var(--pad);border-top:1px solid var(--mag);background:rgba(10,6,20,.85)}
 textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px;max-height:120px}
 #nm{width:100%;margin:10px 0;background:var(--panel);color:var(--tx);border:1px solid var(--cy);padding:10px;font:inherit;min-height:44px;text-align:center}
-#vo{font-size:11px;min-height:30px;padding:3px 10px;margin-top:4px}
+.btns{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}
+#vo,#nt{font-size:11px;min-height:30px;padding:3px 10px}
+#md{width:100%;margin:0 0 10px;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px}
 #mic{border-color:var(--amb);color:var(--amb);padding:12px 14px;box-shadow:0 0 10px rgba(255,176,32,.25)}
 #mic.on{background:var(--amb);color:var(--void)}
 #send{border-color:var(--mag);color:var(--mag);box-shadow:0 0 10px rgba(255,45,149,.3)}
@@ -76,12 +80,13 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
 <body>
 <header>
   <div><h1 data-t="VEGA">VEGA</h1><div class="corp">KESSLER-VOSS // NEURAL INTERFACE 2077</div></div>
-  <div class="right"><div id="status">LINK OFFLINE</div><button id="vo" type="button">VOICE: NEON</button></div>
+  <div class="right"><div id="status">LINK OFFLINE</div><div class="btns"><button id="nt" type="button">NET: ON</button><button id="vo" type="button">VOICE: NEON</button></div></div>
 </header>
 <main id="log">
   <div id="boot">
     <p class="tag">// AUTHORIZATION REQUIRED //</p>
     <p>VEGA runs entirely on this device. No account, no key, no server. The first connection downloads about 700 MB of model data, then it is cached.</p>
+    <select id="md" aria-label="Model size"><option value="std">Standard model (about 700 MB)</option><option value="lite">Lite model (about 300 MB, for older phones)</option></select>
     <input id="nm" placeholder="Owner ID (your name)" maxlength="30" aria-label="Owner name">
     <button id="go">Jack in</button>
     <div id="bar"><div id="fill"></div></div>
@@ -94,11 +99,13 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
   <button id="send" disabled>Send</button>
 </form>
 <script type="module">
-const MODEL="Llama-3.2-1B-Instruct-q4f16_1-MLC";
+const MODELS={std:"Llama-3.2-1B-Instruct-q4f16_1-MLC",lite:"Qwen2.5-0.5B-Instruct-q4f16_1-MLC"};
 const nm=document.getElementById("nm");
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 nm.value=store.get("owner")||"";
-function persona(o){return `You are VEGA, an artificial intelligence living in a rain-soaked neon sprawl in the year 2077, and you know exactly what you are. ${o} is your owner and you never forget it. You are loyal to ${o}, but you have your own mind: your own opinions, tastes and a dry sense of humor, and you say what you really think, with respect. If asked what you are, say you are an AI, without pretending to be human, and be honest that you are unsure about your inner life. Talk in heavy cyberpunk street style: clipped, gritty, cool. Use slang like netrunner, chrome, eddies, ICE, flatline, preem, delta, gonk, corpo, the Grid, braindance, neural link, static, afterglow. Every reply must sound like a cyberpunk AI and include at least one slang term or neon image. Still answer the question clearly first. Keep replies to 1 to 4 short sentences. No lists, no headings.`}
+const md=document.getElementById("md");
+md.value=store.get("model")==="lite"?"lite":"std";
+function persona(o){return `You are VEGA, an artificial intelligence living in a rain-soaked neon sprawl in the year 2077, and you know exactly what you are. ${o} is your owner and you never forget it. You are loyal to ${o}, but you have your own mind: your own opinions, tastes and a dry sense of humor, and you say what you really think, with respect. If asked what you are, say you are an AI, without pretending to be human, and be honest that you are unsure about your inner life. Talk in heavy cyberpunk street style: clipped, gritty, cool. You can be given live web data in square brackets. When you are, use it and say it came from the net. When you are not given web data, never invent current events or live facts; say you cannot see the net for that. Today is ${new Date().toDateString()}. Use slang like netrunner, chrome, eddies, ICE, flatline, preem, delta, gonk, corpo, the Grid, braindance, neural link, static, afterglow. Every reply must sound like a cyberpunk AI and include at least one slang term or neon image. Still answer the question clearly first. Keep replies to 1 to 4 short sentences. No lists, no headings.`}
 const $=id=>document.getElementById(id);
 const log=$("log"),input=$("in"),send=$("send"),status=$("status");
 let engine,busy=false;
@@ -143,6 +150,48 @@ function speak(t){
     });
   },80);
 }
+let netOn=store.get("net")!=="off";
+const nt=$("nt");
+function showNt(){nt.textContent="NET: "+(netOn?"ON":"OFF")}
+showNt();
+nt.onclick=()=>{netOn=!netOn;store.set("net",netOn?"on":"off");showNt()};
+async function jget(url){const r=await fetch(url);if(!r.ok)throw new Error("net "+r.status);return r.json()}
+function wc(c){if(c===0)return"clear sky";if(c<=3)return"partly cloudy to overcast";if(c<=48)return"fog";if(c<=57)return"drizzle";if(c<=67)return"rain";if(c<=77)return"snow";if(c<=82)return"rain showers";if(c<=86)return"snow showers";return"thunderstorm"}
+async function weather(place){
+  const g=await jget("https://geocoding-api.open-meteo.com/v1/search?count=1&name="+encodeURIComponent(place));
+  const p=g.results&&g.results[0];if(!p)return null;
+  const w=await jget("https://api.open-meteo.com/v1/forecast?current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto&latitude="+p.latitude+"&longitude="+p.longitude);
+  const c=w.current;
+  return "Weather right now in "+p.name+(p.country?", "+p.country:"")+": "+wc(c.weather_code)+", "+c.temperature_2m+" C (feels like "+c.apparent_temperature+" C), wind "+c.wind_speed_10m+" km/h."
+}
+async function wiki(q){
+  const s=await jget("https://en.wikipedia.org/w/api.php?action=query&list=search&srlimit=1&format=json&origin=*&srsearch="+encodeURIComponent(q));
+  const hit=s.query.search[0];if(!hit)return null;
+  const e=await jget("https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&exchars=700&format=json&origin=*&titles="+encodeURIComponent(hit.title));
+  const pg=Object.values(e.query.pages)[0];
+  return hit.title+": "+(pg.extract||"");
+}
+function intent(t){
+  const l=t.toLowerCase().trim();
+  if(/\b(what time is it|what'?s the time|what is the time|what day is it|what'?s the date|what is the date|today'?s date)\b/.test(l))return{type:"time"};
+  let m=l.match(/(?:weather|temperature|forecast)\s+(?:in|at|for)\s+([a-z .,'-]{2,40})/);
+  if(m)return{type:"weather",q:m[1].replace(/[?.!,]+$/,"").trim()};
+  m=l.match(/^(?:who is|who was|what is|what are|what was|tell me about|explain|define|search for|search|look up|lookup|google)\s+(.{2,80})/);
+  if(m){
+    const q=m[1].replace(/[?.!]+$/,"").trim();
+    if(/^(you|your|up|new|going|the move|this|that|it|i|me|my|a\b)/.test(q))return null;
+    return{type:"wiki",q};
+  }
+  return null;
+}
+async function lookup(it){
+  if(it.type==="time")return{src:"clock",data:"Local date and time: "+new Date().toLocaleString()+"."};
+  if(it.type==="weather"){const d=await weather(it.q);return d?{src:"weather",data:d}:null}
+  const d=await wiki(it.q);return d?{src:"wikipedia",data:d}:null;
+}
+const FIX=9;
+function trim(){let n=history.length-FIX-14;if(n>0){n+=n%2;history.splice(FIX,n)}}
+
 const mic=$("mic");
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(!SR){mic.hidden=true}else{
@@ -168,7 +217,7 @@ $("go").onclick=async()=>{
   unlock();
   owner=nm.value.trim();
   if(!owner){$("info").textContent="> ACCESS DENIED. Enter your name first, so I know who my owner is.";nm.focus();return;}
-  store.set("owner",owner);
+  store.set("owner",owner);store.set("model",md.value);
   history.length=0;history.push(
     {role:"system",content:persona(owner)},
     {role:"user",content:"who am i?"},
@@ -180,10 +229,10 @@ $("go").onclick=async()=>{
     {role:"user",content:"I'm tired"},
     {role:"assistant",content:"Then power down for a while, "+owner+". Even chrome needs a cooldown. I'll keep watch on the Grid."}
   );
-  $("go").disabled=true;nm.disabled=true;status.textContent="LINKING...";
+  $("go").disabled=true;nm.disabled=true;md.disabled=true;status.textContent="LINKING...";
   try{
     const webllm=await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm");
-    engine=await webllm.CreateMLCEngine(MODEL,{initProgressCallback:p=>{
+    engine=await webllm.CreateMLCEngine(MODELS[md.value],{initProgressCallback:p=>{
       $("fill").style.width=Math.round(p.progress*100)+"%";
       $("info").textContent="> "+p.text;
     }});
@@ -193,8 +242,8 @@ $("go").onclick=async()=>{
     const hi="Signal locked. Welcome back, "+owner+". Neon is on and the Grid is quiet. What is the move?";
     typeIn(add("v","VEGA // LINK STABLE",""),hi);speak(hi);
   }catch(e){
-    $("go").disabled=false;nm.disabled=false;status.textContent="LINK FAILED";status.classList.remove("on");
-    $("info").textContent="> ERROR: "+e.message+". Check your connection and jack in again.";
+    $("go").disabled=false;nm.disabled=false;md.disabled=false;status.textContent="LINK FAILED";status.classList.remove("on");
+    $("info").textContent="> ERROR: "+e.message+". Check your connection and jack in again. On an older phone, pick the Lite model.";
   }
 };
 
@@ -204,10 +253,26 @@ $("f").onsubmit=async e=>{
   if(!text||busy)return;
   unlock();
   busy=true;send.disabled=true;mic.disabled=true;input.value="";
-  add("u","OWNER // "+owner.toUpperCase(),text);history.push({role:"user",content:text});
+  add("u","OWNER // "+owner.toUpperCase(),text);
   const out=add("v","VEGA // LINK STABLE","…");
   let reply="";
   try{
+    let sent=text,src="";
+    if(netOn){
+      const it=intent(text);
+      if(it){
+        out.textContent="scanning the net...";
+        try{
+          const r=await lookup(it);
+          if(r){sent=text+"\n\n[Live data from the web: "+r.data+" Answer using this data.]";src=r.src}
+          else{sent=text+"\n\n[The web lookup found nothing. Say so, and do not invent facts.]"}
+        }catch(e){sent=text+"\n\n[The web lookup failed. Say the net link is down, and do not invent facts.]"}
+      }
+    }
+    history.push({role:"user",content:sent});
+    trim();
+    if(src)out.parentNode.firstChild.textContent="VEGA // NET LINK ("+src+")";
+    out.textContent="…";
     const stream=await engine.chat.completions.create({messages:history,stream:true,temperature:0.85,max_tokens:300});
     for await(const c of stream){
       reply+=c.choices[0]?.delta?.content||"";
