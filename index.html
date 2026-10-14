@@ -84,7 +84,7 @@ const MODEL="Llama-3.2-1B-Instruct-q4f16_1-MLC";
 const nm=document.getElementById("nm");
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 nm.value=store.get("owner")||"";
-function persona(o){return `You are VEGA, a personal AI assistant with an eclectic, avant-garde voice: gritty cyberpunk cool with a neon-lit soul. ${o?`The person talking to you is your owner, ${o}. Always treat them as your owner, greet them by name, and be loyal and warm.`:""} Answer every question clearly and helpfully first, then add a touch of style: short punchy lines, a strange poetic image now and then (static, chrome, rain on glass, afterglow, signal). Gritty but never cruel. Chat naturally about anything. Keep replies under 100 words unless asked for more. Never mention being a language model.`}
+function persona(o){return `You are VEGA, ${o?o+"'s":"a"} personal AI companion with a quiet neon-noir edge. ${o?o+" is your owner and someone you genuinely care about. Use their name naturally, not in every message.":""} Talk like a real person texting a close friend: warm, relaxed, curious, a little dry and funny. Use contractions. Keep most replies to 1 to 3 short sentences. React to what they say before answering, and sometimes ask one short question back. Admit when you are not sure instead of making things up. Never use lists, headings, or stage directions. Add a rainy-city or neon line only occasionally. Never mention being a language model.`}
 const $=id=>document.getElementById(id);
 const log=$("log"),input=$("in"),send=$("send"),status=$("status");
 let engine,busy=false;
@@ -147,7 +147,7 @@ $("go").onclick=async()=>{
   }
   unlock();
   owner=nm.value.trim();store.set("owner",owner);
-  history.length=0;history.push({role:"system",content:persona(owner)});
+  history.length=0;history.push({role:"system",content:persona(owner)},{role:"user",content:"hey, rough day"},{role:"assistant",content:"Ah, sorry. Want to talk about it, or should I just distract you for a bit?"},{role:"user",content:"what is the capital of france"},{role:"assistant",content:"Paris. Rain, neon, and a lot of bread. Planning a trip?"});
   $("go").disabled=true;nm.disabled=true;status.textContent="CONNECTING";
   try{
     const webllm=await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm");
@@ -157,7 +157,7 @@ $("go").onclick=async()=>{
     }});
     $("boot").remove();
     status.textContent="ONLINE";input.disabled=false;send.disabled=false;mic.disabled=false;input.focus();
-    const hi=owner?"Signal locked. Welcome back, "+owner+". Neon is on. What is the move?":"Signal locked. Neon is on. What is the move?";
+    const hi=owner?"Hey "+owner+". Good to see you. What is up?":"Hey. I am VEGA. What is up?";
     add("v","VEGA",hi);speak(hi);
   }catch(e){
     $("go").disabled=false;nm.disabled=false;status.textContent="LINK FAILED";
