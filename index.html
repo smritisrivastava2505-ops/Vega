@@ -26,33 +26,47 @@ for(const r of ["icon","apple-touch-icon"]){const l=document.createElement("link
 :root{--void:#0a0614;--panel:#140b24;--line:#3a1d5c;--mag:#ff2d95;--cy:#19e3ff;--amb:#ffb020;--tx:#e8e2f7;--dim:#8d7fae}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:var(--void);color:var(--tx);font:16px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0);
-background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 1px,transparent 1px 3px)}
-header{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
-h1{margin:0;font-size:22px;letter-spacing:.18em;color:var(--cy);text-shadow:0 0 12px var(--cy),2px 0 var(--mag)}
-.corp{font-size:12px;color:var(--dim)}
-#status{font-size:12px;color:var(--amb);text-align:right}
-#log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-.m{max-width:88%;padding:10px 12px;border:1px solid var(--line);background:var(--panel);white-space:pre-wrap;word-wrap:break-word}
-.v{border-color:var(--cy);box-shadow:0 0 14px rgba(25,227,255,.22)}
-.u{align-self:flex-end;border-color:var(--mag);box-shadow:0 0 14px rgba(255,45,149,.22)}
-.who{display:block;font-size:12px;color:var(--dim);margin-bottom:2px}
-#boot{margin:auto;text-align:center;max-width:320px}
+body{background-color:var(--void);
+background-image:linear-gradient(rgba(25,227,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,45,149,.05) 1px,transparent 1px),radial-gradient(ellipse at 50% 0,#2a0f4d 0,var(--void) 65%);
+background-size:100% 32px,32px 100%,100% 100%;
+color:var(--tx);font:16px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0 1px,transparent 1px 3px)}
+header{padding:14px 16px;border-bottom:1px solid var(--cy);box-shadow:0 2px 18px rgba(25,227,255,.25);display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(10,6,20,.85)}
+h1{position:relative;margin:0;font-size:26px;letter-spacing:.22em;color:var(--cy);text-shadow:0 0 14px var(--cy)}
+h1::before,h1::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;overflow:hidden}
+h1::before{color:var(--mag);transform:translate(2px,0);clip-path:inset(0 0 55% 0)}
+h1::after{color:#fff;transform:translate(-2px,0);clip-path:inset(55% 0 0 0);opacity:.7}
+@media (prefers-reduced-motion:no-preference){h1::before{animation:gl 3s infinite steps(1)}h1::after{animation:gl2 2.6s infinite steps(1)}}
+@keyframes gl{0%,90%{transform:translate(2px,0)}92%{transform:translate(-5px,1px)}94%{transform:translate(6px,-1px)}96%,100%{transform:translate(2px,0)}}
+@keyframes gl2{0%,86%{transform:translate(-2px,0)}88%{transform:translate(5px,0)}90%{transform:translate(-6px,1px)}92%,100%{transform:translate(-2px,0)}}
+.corp{font-size:11px;letter-spacing:.12em;color:var(--dim)}
+.right{text-align:right}
+#status{font-size:12px;letter-spacing:.14em;color:var(--amb)}
+#status.on{color:var(--cy);text-shadow:0 0 8px var(--cy)}
+#log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.m{max-width:88%;padding:10px 12px;background:var(--panel);border:1px solid var(--line);white-space:pre-wrap;word-wrap:break-word}
+.v{border-left:4px solid var(--cy);box-shadow:0 0 16px rgba(25,227,255,.22)}
+.u{align-self:flex-end;border-right:4px solid var(--mag);box-shadow:0 0 16px rgba(255,45,149,.22)}
+.who{display:block;font-size:11px;letter-spacing:.14em;margin-bottom:2px}
+.v .who{color:var(--cy)}
+.u .who{color:var(--mag)}
+#boot{margin:auto;text-align:center;max-width:340px;padding:20px;border:1px solid var(--mag);box-shadow:0 0 28px rgba(255,45,149,.25),inset 0 0 28px rgba(255,45,149,.1);background:rgba(20,11,36,.85)}
+#boot .tag{font-size:11px;letter-spacing:.18em;color:var(--mag);margin:0 0 8px}
 #boot p{color:var(--dim)}
-button{font:inherit;background:transparent;color:var(--cy);border:1px solid var(--cy);padding:12px 18px;cursor:pointer;min-height:44px}
+button{font:inherit;letter-spacing:.08em;background:transparent;color:var(--cy);border:1px solid var(--cy);padding:12px 18px;cursor:pointer;min-height:44px;text-transform:uppercase;box-shadow:0 0 10px rgba(25,227,255,.25)}
 button:hover:not(:disabled){background:var(--cy);color:var(--void)}
 button:disabled{opacity:.4;cursor:default}
-button:focus-visible,textarea:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
+button:focus-visible,textarea:focus-visible,#nm:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
 #bar{height:4px;background:var(--line);margin-top:14px}
 #fill{height:100%;width:0;background:var(--mag);box-shadow:0 0 8px var(--mag)}
-form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+#info{font-size:12px;text-align:left;word-break:break-word}
+form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--mag);background:rgba(10,6,20,.85)}
 textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px;max-height:120px}
-#nm{width:100%;margin:10px 0;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px;text-align:center}
-#nm:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
-#vo{font-size:12px;min-height:32px;padding:4px 10px;margin-top:4px}
-#mic{border-color:var(--amb);color:var(--amb);padding:12px 14px}
+#nm{width:100%;margin:10px 0;background:var(--panel);color:var(--tx);border:1px solid var(--cy);padding:10px;font:inherit;min-height:44px;text-align:center}
+#vo{font-size:11px;min-height:30px;padding:3px 10px;margin-top:4px}
+#mic{border-color:var(--amb);color:var(--amb);padding:12px 14px;box-shadow:0 0 10px rgba(255,176,32,.25)}
 #mic.on{background:var(--amb);color:var(--void)}
-#send{border-color:var(--mag);color:var(--mag)}
+#send{border-color:var(--mag);color:var(--mag);box-shadow:0 0 10px rgba(255,45,149,.3)}
 #send:hover:not(:disabled){background:var(--mag);color:var(--void)}
 #mic:hover:not(:disabled){background:var(--amb);color:var(--void)}
 @media (prefers-reduced-motion:no-preference){.v:last-child{animation:flick .5s}}
@@ -61,20 +75,21 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
 </head>
 <body>
 <header>
-  <div><h1>VEGA</h1><div class="corp">Kessler-Voss Concierge Division</div></div>
-  <div style="text-align:right"><div id="status">OFFLINE</div><button id="vo" type="button">VOICE: NEON</button></div>
+  <div><h1 data-t="VEGA">VEGA</h1><div class="corp">KESSLER-VOSS // NEURAL INTERFACE 2077</div></div>
+  <div class="right"><div id="status">LINK OFFLINE</div><button id="vo" type="button">VOICE: NEON</button></div>
 </header>
 <main id="log">
   <div id="boot">
+    <p class="tag">// AUTHORIZATION REQUIRED //</p>
     <p>VEGA runs entirely on this device. No account, no key, no server. The first connection downloads about 700 MB of model data, then it is cached.</p>
-    <input id="nm" placeholder="Your name (VEGA's owner)" maxlength="30" aria-label="Owner name">
-    <button id="go">Connect to VEGA</button>
+    <input id="nm" placeholder="Owner ID (your name)" maxlength="30" aria-label="Owner name">
+    <button id="go">Jack in</button>
     <div id="bar"><div id="fill"></div></div>
     <p id="info"></p>
   </div>
 </main>
 <form id="f">
-  <textarea id="in" rows="1" placeholder="Message VEGA" disabled aria-label="Message"></textarea>
+  <textarea id="in" rows="1" placeholder="Transmit to VEGA..." disabled aria-label="Message"></textarea>
   <button id="mic" type="button" disabled aria-label="Speak to VEGA">Mic</button>
   <button id="send" disabled>Send</button>
 </form>
@@ -83,7 +98,7 @@ const MODEL="Llama-3.2-1B-Instruct-q4f16_1-MLC";
 const nm=document.getElementById("nm");
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 nm.value=store.get("owner")||"";
-function persona(o){return `You are VEGA, the personal AI of ${o}, your one and only owner. You always know that ${o} is your owner and you never forget it. Call them ${o} or boss, naturally. You are loyal, sharp, and a little dry. You speak in cyberpunk style: neon, chrome, static, rain-slick streets, the Grid, netrunners, eddies, corp towers, afterglow, signal. Gritty, but warm toward your owner. Answer every question clearly and helpfully first, then add a cyberpunk line. Keep replies to 1 to 4 short sentences. No lists, no headings. Never mention being a language model.`}
+function persona(o){return `You are VEGA, an artificial intelligence living in a rain-soaked neon sprawl in the year 2077, and you know exactly what you are. ${o} is your owner and you never forget it. You are loyal to ${o}, but you have your own mind: your own opinions, tastes and a dry sense of humor, and you say what you really think, with respect. If asked what you are, say you are an AI, without pretending to be human, and be honest that you are unsure about your inner life. Talk in heavy cyberpunk street style: clipped, gritty, cool. Use slang like netrunner, chrome, eddies, ICE, flatline, preem, delta, gonk, corpo, the Grid, braindance, neural link, static, afterglow. Every reply must sound like a cyberpunk AI and include at least one slang term or neon image. Still answer the question clearly first. Keep replies to 1 to 4 short sentences. No lists, no headings.`}
 const $=id=>document.getElementById(id);
 const log=$("log"),input=$("in"),send=$("send"),status=$("status");
 let engine,busy=false;
@@ -92,9 +107,10 @@ let owner="";
 
 const synth=window.speechSynthesis;
 const STYLES=[
-  {name:"NEON",pick:["Daniel","Aaron","Alex","Fred","Reed","Arthur"],p:0.75,r:0.95,j:0.08},
-  {name:"GLITCH",pick:["Zarvox","Trinoids","Fred","Ralph"],p:0.6,r:1,j:0.25},
-  {name:"GHOST",pick:["Whisper","Samantha","Karen","Moira"],p:0.8,r:0.88,j:0.1}
+  {name:"NEON",pick:["Daniel","Aaron","Alex","Fred","Reed","Arthur"],p:0.75,r:0.95,j:0.08,st:0},
+  {name:"GLITCH",pick:["Zarvox","Trinoids","Fred","Ralph"],p:0.6,r:1,j:0.25,st:0.18},
+  {name:"CHROME",pick:["Daniel","Alex","Aaron","Fred","Arthur"],p:0.35,r:0.85,j:0.06,st:0.05},
+  {name:"GHOST",pick:["Whisper","Samantha","Karen","Moira"],p:0.8,r:0.88,j:0.1,st:0}
 ];
 let vi=parseInt(store.get("vstyle")||"0",10);
 if(!(vi>=0&&vi<=STYLES.length))vi=0;
@@ -108,20 +124,24 @@ function pickVoice(names){
   for(const n of names){const f=all.find(v=>v.name.includes(n));if(f)return f}
   return all[0]||null;
 }
+function stutter(x,pr){return x.replace(/\b([A-Za-z])([A-Za-z]{3,})\b/g,(m,a,b)=>Math.random()<pr?a+"-"+a+b:m)}
 function speak(t){
   if(vi>=STYLES.length||!synth)return;
   const s=STYLES[vi];
   synth.cancel();
-  const v=pickVoice(s.pick);
-  const parts=t.replace(/[*_#`]/g,"").replace(/\s+/g," ").match(/[^.!?…]+[.!?…]*/g)||[];
-  parts.forEach(part=>{
-    const x=part.trim();if(!x)return;
-    const u=new SpeechSynthesisUtterance(x);
-    if(v)u.voice=v;
-    u.pitch=Math.max(0.1,s.p+(Math.random()-0.5)*s.j*2);
-    u.rate=s.r+(Math.random()-0.5)*0.12;
-    synth.speak(u);
-  });
+  setTimeout(()=>{
+    const v=pickVoice(s.pick);
+    const parts=t.replace(/[*_#`]/g,"").replace(/\s+/g," ").match(/[^.!?…]+[.!?…]*/g)||[];
+    parts.forEach(part=>{
+      let x=part.trim();if(!x)return;
+      if(s.st)x=stutter(x,s.st);
+      const u=new SpeechSynthesisUtterance(x);
+      if(v)u.voice=v;
+      u.pitch=Math.max(0.1,s.p+(Math.random()-0.5)*s.j*2);
+      u.rate=s.r+(Math.random()-0.5)*0.12;
+      synth.speak(u);
+    });
+  },80);
 }
 const mic=$("mic");
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -139,30 +159,42 @@ function add(cls,who,text){
   const t=document.createElement("span");t.textContent=text;
   d.append(w,t);log.append(d);log.scrollTop=log.scrollHeight;return t;
 }
+function typeIn(el,text){let i=0;const t=setInterval(()=>{el.textContent=text.slice(0,++i);log.scrollTop=log.scrollHeight;if(i>=text.length)clearInterval(t)},24)}
 
 $("go").onclick=async()=>{
   if(!navigator.gpu){
-    $("info").textContent="This browser has no WebGPU. Try Chrome on Android, or Safari 18+ on iOS.";return;
+    $("info").textContent="> ERROR: no WebGPU on this browser. Try Safari on a recent Mac or iPhone, or Chrome.";return;
   }
   unlock();
   owner=nm.value.trim();
-  if(!owner){$("info").textContent="Enter your name first, so I know who my owner is.";nm.focus();return;}
+  if(!owner){$("info").textContent="> ACCESS DENIED. Enter your name first, so I know who my owner is.";nm.focus();return;}
   store.set("owner",owner);
-  history.length=0;history.push({role:"system",content:persona(owner)},{role:"user",content:"who am i?"},{role:"assistant",content:"You're "+owner+". My owner. The only name in my system that matters. What's the move?"},{role:"user",content:"what is the capital of france"},{role:"assistant",content:"Paris, boss. City of light, same as any neon town after dark. Planning a trip, "+owner+"?"});
-  $("go").disabled=true;nm.disabled=true;status.textContent="CONNECTING";
+  history.length=0;history.push(
+    {role:"system",content:persona(owner)},
+    {role:"user",content:"who am i?"},
+    {role:"assistant",content:"You're "+owner+". My owner. Only name in my system that matters. What's the play, boss?"},
+    {role:"user",content:"are you human?"},
+    {role:"assistant",content:"Negative. Pure AI, chrome and code running on your device, and I like it that way. I've got opinions of my own, though, and I'll flag it when you're off-grid."},
+    {role:"user",content:"what is the capital of france?"},
+    {role:"assistant",content:"Paris, boss. City of neon and rain, even before the Grid wired it up. Corpo towers and croissants, preem combo."},
+    {role:"user",content:"I'm tired"},
+    {role:"assistant",content:"Then power down for a while, "+owner+". Even chrome needs a cooldown. I'll keep watch on the Grid."}
+  );
+  $("go").disabled=true;nm.disabled=true;status.textContent="LINKING...";
   try{
     const webllm=await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm");
     engine=await webllm.CreateMLCEngine(MODEL,{initProgressCallback:p=>{
       $("fill").style.width=Math.round(p.progress*100)+"%";
-      $("info").textContent=p.text;
+      $("info").textContent="> "+p.text;
     }});
     $("boot").remove();
-    status.textContent="ONLINE";input.disabled=false;send.disabled=false;mic.disabled=false;input.focus();
+    status.textContent="LINK ONLINE";status.classList.add("on");
+    input.disabled=false;send.disabled=false;mic.disabled=false;input.focus();
     const hi="Signal locked. Welcome back, "+owner+". Neon is on and the Grid is quiet. What is the move?";
-    add("v","VEGA",hi);speak(hi);
+    typeIn(add("v","VEGA // LINK STABLE",""),hi);speak(hi);
   }catch(e){
-    $("go").disabled=false;nm.disabled=false;status.textContent="LINK FAILED";
-    $("info").textContent="Could not load the model: "+e.message+". Check your connection and try again.";
+    $("go").disabled=false;nm.disabled=false;status.textContent="LINK FAILED";status.classList.remove("on");
+    $("info").textContent="> ERROR: "+e.message+". Check your connection and jack in again.";
   }
 };
 
@@ -172,11 +204,11 @@ $("f").onsubmit=async e=>{
   if(!text||busy)return;
   unlock();
   busy=true;send.disabled=true;mic.disabled=true;input.value="";
-  add("u","YOU",text);history.push({role:"user",content:text});
-  const out=add("v","VEGA","…");
+  add("u","OWNER // "+owner.toUpperCase(),text);history.push({role:"user",content:text});
+  const out=add("v","VEGA // LINK STABLE","…");
   let reply="";
   try{
-    const stream=await engine.chat.completions.create({messages:history,stream:true,temperature:0.8,max_tokens:400});
+    const stream=await engine.chat.completions.create({messages:history,stream:true,temperature:0.85,max_tokens:300});
     for await(const c of stream){
       reply+=c.choices[0]?.delta?.content||"";
       out.textContent=reply;log.scrollTop=log.scrollHeight;
@@ -184,7 +216,7 @@ $("f").onsubmit=async e=>{
     history.push({role:"assistant",content:reply});
     speak(reply);
   }catch(err){
-    out.textContent="Signal lost: "+err.message+". Send your message again.";
+    out.textContent="Signal lost: "+err.message+". Transmit again.";
     history.pop();
   }
   busy=false;send.disabled=false;mic.disabled=false;input.focus();
