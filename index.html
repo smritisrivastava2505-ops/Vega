@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,8 +50,12 @@ form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
 textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px;max-height:120px}
 #nm{width:100%;margin:10px 0;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px;text-align:center}
 #nm:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
+#vo{font-size:12px;min-height:32px;padding:4px 10px;margin-top:4px}
+#mic{border-color:var(--amb);color:var(--amb);padding:12px 14px}
+#mic.on{background:var(--amb);color:var(--void)}
 #send{border-color:var(--mag);color:var(--mag)}
 #send:hover:not(:disabled){background:var(--mag);color:var(--void)}
+#mic:hover:not(:disabled){background:var(--amb);color:var(--void)}
 @media (prefers-reduced-motion:no-preference){.v:last-child{animation:flick .5s}}
 @keyframes flick{0%{opacity:.2}20%{opacity:1}40%{opacity:.4}100%{opacity:1}}
 </style>
@@ -58,7 +63,7 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
 <body>
 <header>
   <div><h1>VEGA</h1><div class="corp">Kessler-Voss Concierge Division</div></div>
-  <div id="status">OFFLINE</div>
+  <div style="text-align:right"><div id="status">OFFLINE</div><button id="vo" type="button">VOICE: NEON</button></div>
 </header>
 <main id="log">
   <div id="boot">
@@ -71,6 +76,7 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
 </main>
 <form id="f">
   <textarea id="in" rows="1" placeholder="Message VEGA" disabled aria-label="Message"></textarea>
+  <button id="mic" type="button" disabled aria-label="Speak to VEGA">Mic</button>
   <button id="send" disabled>Send</button>
 </form>
 <script type="module">
@@ -78,12 +84,55 @@ const MODEL="Llama-3.2-1B-Instruct-q4f16_1-MLC";
 const nm=document.getElementById("nm");
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 nm.value=store.get("owner")||"";
-function persona(o){return `You are VEGA, a personal AI assistant with a neon cyberpunk personality. ${o?`The person talking to you is your owner, ${o}. Always treat them as your owner, greet them by name, and be loyal and warm.`:""} Talk like a normal, friendly, helpful companion: answer questions clearly and chat naturally about anything. Keep the cyberpunk flavor light, a dry joke or a neon metaphor now and then, not in every sentence. Keep replies under 120 words unless asked for more. Never mention being a language model.`}
+function persona(o){return `You are VEGA, a personal AI assistant with an eclectic, avant-garde voice: gritty cyberpunk cool with a neon-lit soul. ${o?`The person talking to you is your owner, ${o}. Always treat them as your owner, greet them by name, and be loyal and warm.`:""} Answer every question clearly and helpfully first, then add a touch of style: short punchy lines, a strange poetic image now and then (static, chrome, rain on glass, afterglow, signal). Gritty but never cruel. Chat naturally about anything. Keep replies under 100 words unless asked for more. Never mention being a language model.`}
 const $=id=>document.getElementById(id);
 const log=$("log"),input=$("in"),send=$("send"),status=$("status");
 let engine,busy=false;
 const history=[];
 let owner="";
+
+const synth=window.speechSynthesis;
+const STYLES=[
+  {name:"NEON",pick:["Daniel","Aaron","Alex","Fred","Reed","Arthur"],p:0.75,r:0.95,j:0.08},
+  {name:"GLITCH",pick:["Zarvox","Trinoids","Fred","Ralph"],p:0.6,r:1,j:0.25},
+  {name:"GHOST",pick:["Whisper","Samantha","Karen","Moira"],p:0.8,r:0.88,j:0.1}
+];
+let vi=parseInt(store.get("vstyle")||"0",10);
+if(!(vi>=0&&vi<=STYLES.length))vi=0;
+const vo=$("vo");
+function showVo(){vo.textContent="VOICE: "+(vi<STYLES.length?STYLES[vi].name:"OFF")}
+showVo();
+vo.onclick=()=>{vi=(vi+1)%(STYLES.length+1);store.set("vstyle",String(vi));if(vi>=STYLES.length&&synth)synth.cancel();showVo();if(vi<STYLES.length)speak("Voice check. Signal clean.")};
+function unlock(){try{synth.speak(new SpeechSynthesisUtterance(""))}catch(e){}}
+function pickVoice(names){
+  const all=synth.getVoices().filter(v=>v.lang.startsWith("en"));
+  for(const n of names){const f=all.find(v=>v.name.includes(n));if(f)return f}
+  return all[0]||null;
+}
+function speak(t){
+  if(vi>=STYLES.length||!synth)return;
+  const s=STYLES[vi];
+  synth.cancel();
+  const v=pickVoice(s.pick);
+  const parts=t.replace(/[*_#`]/g,"").replace(/\s+/g," ").match(/[^.!?…]+[.!?…]*/g)||[];
+  parts.forEach(part=>{
+    const x=part.trim();if(!x)return;
+    const u=new SpeechSynthesisUtterance(x);
+    if(v)u.voice=v;
+    u.pitch=Math.max(0.1,s.p+(Math.random()-0.5)*s.j*2);
+    u.rate=s.r+(Math.random()-0.5)*0.12;
+    synth.speak(u);
+  });
+}
+const mic=$("mic");
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){mic.hidden=true}else{
+  const rec=new SR();rec.lang="en-US";rec.interimResults=false;
+  rec.onresult=e=>{input.value=e.results[0][0].transcript;$("f").requestSubmit()};
+  rec.onend=()=>mic.classList.remove("on");
+  rec.onerror=()=>mic.classList.remove("on");
+  mic.onclick=()=>{if(busy)return;unlock();if(synth)synth.cancel();mic.classList.add("on");try{rec.start()}catch(e){}};
+}
 
 function add(cls,who,text){
   const d=document.createElement("div");d.className="m "+cls;
@@ -96,6 +145,7 @@ $("go").onclick=async()=>{
   if(!navigator.gpu){
     $("info").textContent="This browser has no WebGPU. Try Chrome on Android, or Safari 18+ on iOS.";return;
   }
+  unlock();
   owner=nm.value.trim();store.set("owner",owner);
   history.length=0;history.push({role:"system",content:persona(owner)});
   $("go").disabled=true;nm.disabled=true;status.textContent="CONNECTING";
@@ -106,8 +156,9 @@ $("go").onclick=async()=>{
       $("info").textContent=p.text;
     }});
     $("boot").remove();
-    status.textContent="ONLINE";input.disabled=false;send.disabled=false;input.focus();
-    add("v","VEGA",owner?"Connection stable. Welcome back, "+owner+". What can I do for you?":"Connection stable. What can I do for you?");
+    status.textContent="ONLINE";input.disabled=false;send.disabled=false;mic.disabled=false;input.focus();
+    const hi=owner?"Signal locked. Welcome back, "+owner+". Neon is on. What is the move?":"Signal locked. Neon is on. What is the move?";
+    add("v","VEGA",hi);speak(hi);
   }catch(e){
     $("go").disabled=false;nm.disabled=false;status.textContent="LINK FAILED";
     $("info").textContent="Could not load the model: "+e.message+". Check your connection and try again.";
@@ -118,7 +169,8 @@ $("f").onsubmit=async e=>{
   e.preventDefault();
   const text=input.value.trim();
   if(!text||busy)return;
-  busy=true;send.disabled=true;input.value="";
+  unlock();
+  busy=true;send.disabled=true;mic.disabled=true;input.value="";
   add("u","YOU",text);history.push({role:"user",content:text});
   const out=add("v","VEGA","…");
   let reply="";
@@ -129,11 +181,12 @@ $("f").onsubmit=async e=>{
       out.textContent=reply;log.scrollTop=log.scrollHeight;
     }
     history.push({role:"assistant",content:reply});
+    speak(reply);
   }catch(err){
     out.textContent="Signal lost: "+err.message+". Send your message again.";
     history.pop();
   }
-  busy=false;send.disabled=false;input.focus();
+  busy=false;send.disabled=false;mic.disabled=false;input.focus();
 };
 input.addEventListener("keydown",e=>{
   if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("f").requestSubmit();}
