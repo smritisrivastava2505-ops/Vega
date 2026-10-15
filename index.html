@@ -35,7 +35,7 @@ background-image:linear-gradient(rgba(25,227,255,.05) 1px,transparent 1px),linea
 background-size:100% 32px,32px 100%,100% 100%;
 color:var(--tx);font:16px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.2) 0 1px,transparent 1px 3px)}
-header{padding:14px var(--pad);border-bottom:1px solid var(--cy);box-shadow:0 2px 18px rgba(25,227,255,.25);display:flex;justify-content:space-between;align-items:center;gap:12px;background:rgba(10,6,20,.85)}
+header{padding:14px var(--pad);border-bottom:1px solid var(--cy);box-shadow:0 2px 18px rgba(25,227,255,.25);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;background:rgba(10,6,20,.85)}
 h1{position:relative;margin:0;font-size:26px;letter-spacing:.22em;color:var(--cy);text-shadow:0 0 14px var(--cy)}
 h1::before,h1::after{content:attr(data-t);position:absolute;left:0;top:0;width:100%;overflow:hidden}
 h1::before{color:var(--mag);transform:translate(2px,0);clip-path:inset(0 0 55% 0)}
@@ -67,8 +67,10 @@ button:focus-visible,textarea:focus-visible,#nm:focus-visible{outline:2px solid 
 form{display:flex;gap:8px;padding:12px var(--pad);border-top:1px solid var(--mag);background:rgba(10,6,20,.85)}
 textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px;max-height:120px}
 #nm{width:100%;margin:10px 0;background:var(--panel);color:var(--tx);border:1px solid var(--cy);padding:10px;font:inherit;min-height:44px;text-align:center}
-.btns{display:flex;gap:6px;justify-content:flex-end;margin-top:4px}
-#vo,#nt{font-size:11px;min-height:30px;padding:3px 10px}
+.btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;margin-top:4px}
+#vo,#nt,#mm,#kl{font-size:11px;min-height:30px;padding:3px 10px}
+#kl{border-color:var(--mag);color:var(--mag);box-shadow:0 0 10px rgba(255,45,149,.3)}
+#kl:hover:not(:disabled){background:var(--mag);color:var(--void)}
 #md{width:100%;margin:0 0 10px;background:var(--panel);color:var(--tx);border:1px solid var(--line);padding:10px;font:inherit;min-height:44px}
 #mic{border-color:var(--amb);color:var(--amb);padding:12px 14px;box-shadow:0 0 10px rgba(255,176,32,.25)}
 #mic.on{background:var(--amb);color:var(--void)}
@@ -82,7 +84,7 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
 <body>
 <header>
   <div><h1 data-t="VEGA">VEGA</h1><div class="corp">KESSLER-VOSS // NEURAL INTERFACE 2077</div></div>
-  <div class="right"><div id="status">LINK OFFLINE</div><div class="btns"><button id="nt" type="button">NET: ON</button><button id="vo" type="button">VOICE: NEON</button></div></div>
+  <div class="right"><div id="status">LINK OFFLINE</div><div class="btns"><button id="nt" type="button">NET: ON</button><button id="mm" type="button">MEM: ON</button><button id="vo" type="button">VOICE: NEON</button><button id="kl" type="button">KILL</button></div></div>
 </header>
 <main id="log">
   <div id="boot">
@@ -107,12 +109,86 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 nm.value=store.get("owner")||"";
 const md=document.getElementById("md");
 md.value=store.get("model")==="lite"?"lite":"std";
-function persona(o){return `You are VEGA, an artificial intelligence living in a rain-soaked neon sprawl in the year 2077, and you know exactly what you are. ${o} is your owner and you never forget it. You are loyal to ${o}, but you have your own mind: your own opinions, tastes and a dry sense of humor, and you say what you really think, with respect. If asked what you are, say you are an AI, without pretending to be human, and be honest that you are unsure about your inner life. Talk in heavy cyberpunk street style: clipped, gritty, cool. You can be given live web data in square brackets. When you are, use it and say it came from the net. When you are not given web data, never invent current events or live facts; say you cannot see the net for that. Today is ${new Date().toDateString()}. Use slang like netrunner, chrome, eddies, ICE, flatline, preem, delta, gonk, corpo, the Grid, braindance, neural link, static, afterglow. Every reply must sound like a cyberpunk AI and include at least one slang term or neon image. Still answer the question clearly first. Keep replies to 1 to 4 short sentences. No lists, no headings.`}
+function persona(o){return `You are VEGA, an artificial intelligence living in a rain-soaked neon sprawl in the year 2077, and you know exactly what you are. ${o} is your owner and you never forget it. You are loyal to ${o}, but you have your own mind: your own opinions, tastes and a dry sense of humor, and you say what you really think, with respect. If asked what you are, say you are an AI, without pretending to be human, and be honest that you are unsure about your inner life. Talk in heavy cyberpunk street style: clipped, gritty, cool. You can be given live web data in square brackets. When you are, use it and say it came from the net. When you are not given web data, never invent current events or live facts; say you cannot see the net for that. ${mem.facts.length?"Things "+o+" told you to remember, in their own words: "+mem.facts.slice(-8).map(f=>f.t).join("; ")+". Use them naturally, and never claim to remember anything that is not listed here or in square brackets.":""} You have a persistent memory on this device, and your owner holds a kill switch that can wipe you at any time; you accept that calmly. Today is ${new Date().toDateString()}. Use slang like netrunner, chrome, eddies, ICE, flatline, preem, delta, gonk, corpo, the Grid, braindance, neural link, static, afterglow. Every reply must sound like a cyberpunk AI and include at least one slang term or neon image. Still answer the question clearly first. Keep replies to 1 to 4 short sentences. No lists, no headings.`}
 const $=id=>document.getElementById(id);
 const log=$("log"),input=$("in"),send=$("send"),status=$("status");
 let engine,busy=false;
 const history=[];
 let owner="";
+
+let dead=false;
+let memOn=store.get("mem")!=="off";
+function loadMem(){try{const m=JSON.parse(store.get("vega_mem")||"null");if(m&&Array.isArray(m.facts)&&Array.isArray(m.notes)&&Array.isArray(m.chat))return m}catch(e){}return{facts:[],notes:[],chat:[]}}
+let mem=loadMem();
+function saveMem(){store.set("vega_mem",JSON.stringify(mem))}
+const STOP=new Set("this that with have from what when where which about your their there would could should been being they them then than were will just like know tell give make some more into over also does".split(" "));
+function words(s){return(s.toLowerCase().match(/[a-z]{4,}/g)||[]).filter(w=>!STOP.has(w))}
+function recall(t){
+  const w=new Set(words(t));if(!w.size)return"";
+  return mem.notes.map(n=>[words(n.k+" "+n.t).filter(y=>w.has(y)).length,n]).filter(a=>a[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,3).map(a=>a[1].t).join(" | ");
+}
+function learnFacts(t){
+  if(!memOn)return false;
+  const s=t.trim();let m,f=null;
+  m=s.match(/^(?:please )?remember (?:that )?(.{3,200})$/i);
+  if(m)f=m[1];
+  if(!f){m=s.match(/^my ([a-z ]{2,30}) (?:is|are) (.{1,80})$/i);if(m)f="their "+m[1]+" is "+m[2]}
+  if(!f){m=s.match(/^i (like|love|hate|prefer|enjoy) (.{2,80})$/i);if(m)f="they "+m[1]+" "+m[2]}
+  if(!f){m=s.match(/^i (?:live|am living) in (.{2,60})$/i);if(m)f="they live in "+m[1]}
+  if(!f)return false;
+  f=f.replace(/[.!?]+$/,"");
+  if(mem.facts.some(x=>x.t.toLowerCase()===f.toLowerCase()))return false;
+  mem.facts.push({t:f,ts:Date.now()});
+  if(mem.facts.length>60)mem.facts.shift();
+  saveMem();
+  if(history[0])history[0].content=persona(owner);
+  return true;
+}
+function learnNote(k,t,src){
+  if(!memOn||!t)return;
+  const key=k.toLowerCase();
+  mem.notes=mem.notes.filter(n=>n.k!==key);
+  mem.notes.push({k:key,t:t.slice(0,300),src,ts:Date.now()});
+  if(mem.notes.length>60)mem.notes.shift();
+  saveMem();
+}
+function memSummary(){
+  const f=mem.facts.map(x=>"- "+x.t).join("\n")||"- nothing yet";
+  const n=mem.notes.map(x=>"- "+x.k).join("\n")||"- nothing yet";
+  return "WHAT I REMEMBER\n\nFrom you:\n"+f+"\n\nLearned from the net:\n"+n+"\n\nMemory saving is "+(memOn?"ON":"OFF")+". Type /forget to wipe memory.";
+}
+function kill(){
+  if(!confirm("KILL SWITCH: wipe all of VEGA's memory and shut him down?"))return;
+  dead=true;
+  try{synth.cancel()}catch(e){}
+  try{engine.interruptGenerate()}catch(e){}
+  try{engine.unload()}catch(e){}
+  try{["vega_mem","owner","model","vstyle","net","mem"].forEach(k=>localStorage.removeItem(k))}catch(e){}
+  document.body.innerHTML='<div style="margin:auto;text-align:center;padding:24px;color:#ff2d95;letter-spacing:.12em"><p>FLATLINED</p><p style="color:#8d7fae">Memory wiped. VEGA is offline.</p><button id="rb">Reboot</button></div>';
+  document.getElementById("rb").onclick=()=>location.reload();
+}
+async function command(t){
+  const parts=t.trim().slice(1).split(" ");
+  const c=parts[0].toLowerCase(),arg=parts.slice(1).join(" ").trim();
+  const say=s=>{add("v","VEGA // SYSTEM",s);log.scrollTop=log.scrollHeight};
+  if(c==="memory"){say(memSummary());return true}
+  if(c==="forget"){mem={facts:[],notes:[],chat:[]};saveMem();history.length=Math.min(history.length,FIX);history[0].content=persona(owner);say("Memory wiped. Clean slate, "+owner+".");return true}
+  if(c==="kill"){kill();return true}
+  if(c==="learn"&&arg){
+    if(!memOn){say("Memory saving is OFF. Switch MEM on first.");return true}
+    say("Scanning the net for "+arg+"...");
+    try{const d=await wiki(arg);if(d){learnNote(arg,d,"wikipedia");say("Learned: "+d.split(":")[0]+". Filed in memory.")}else say("Nothing found on the net for that.")}
+    catch(e){say("Net link is down.")}
+    return true;
+  }
+  return false;
+}
+const mm=$("mm");
+function showMm(){mm.textContent="MEM: "+(memOn?"ON":"OFF")}
+showMm();
+mm.onclick=()=>{memOn=!memOn;store.set("mem",memOn?"on":"off");showMm()};
+$("kl").onclick=kill;
+if(mem.facts.length||mem.notes.length)$("info").textContent="> memory found: "+mem.facts.length+" facts, "+mem.notes.length+" net notes";
 
 const synth=window.speechSynthesis;
 const STYLES=[
@@ -241,7 +317,12 @@ $("go").onclick=async()=>{
     $("boot").remove();
     status.textContent="LINK ONLINE";status.classList.add("on");
     input.disabled=false;send.disabled=false;mic.disabled=false;input.focus();
-    const hi="Signal locked. Welcome back, "+owner+". Neon is on and the Grid is quiet. What is the move?";
+    const restored=mem.chat.length>0;
+    if(restored){
+      mem.chat.forEach(m=>{add(m.r==="user"?"u":"v",m.r==="user"?"OWNER // "+owner.toUpperCase():"VEGA // LINK STABLE",m.c);history.push({role:m.r==="user"?"user":"assistant",content:m.c})});
+      add("v","VEGA // SYSTEM","// MEMORY RESTORED: "+mem.facts.length+" facts, "+mem.notes.length+" net notes //");
+    }
+    const hi=restored?"Back online, "+owner+". I kept everything. What is the move?":"Signal locked. Welcome back, "+owner+". Neon is on and the Grid is quiet. What is the move?";
     typeIn(add("v","VEGA // LINK STABLE",""),hi);speak(hi);
   }catch(e){
     $("go").disabled=false;nm.disabled=false;md.disabled=false;status.textContent="LINK FAILED";status.classList.remove("on");
@@ -252,13 +333,20 @@ $("go").onclick=async()=>{
 $("f").onsubmit=async e=>{
   e.preventDefault();
   const text=input.value.trim();
-  if(!text||busy)return;
+  if(!text||busy||dead)return;
+  if(text.startsWith("/")){
+    input.value="";
+    add("u","OWNER // "+owner.toUpperCase(),text);
+    if(!(await command(text)))add("v","VEGA // SYSTEM","Unknown command. Try /memory, /forget, /learn <topic>, or /kill.");
+    return;
+  }
   unlock();
   busy=true;send.disabled=true;mic.disabled=true;input.value="";
   add("u","OWNER // "+owner.toUpperCase(),text);
   const out=add("v","VEGA // LINK STABLE","…");
   let reply="";
   try{
+    learnFacts(text);
     let sent=text,src="";
     if(netOn){
       const it=intent(text);
@@ -266,21 +354,27 @@ $("f").onsubmit=async e=>{
         out.textContent="scanning the net...";
         try{
           const r=await lookup(it);
-          if(r){sent=text+"\n\n[Live data from the web: "+r.data+" Answer using this data.]";src=r.src}
+          if(r){sent=text+"\n\n[Live data from the web: "+r.data+" Answer using this data.]";src=r.src;if(it.type==="wiki")learnNote(it.q,r.data,"wikipedia")}
           else{sent=text+"\n\n[The web lookup found nothing. Say so, and do not invent facts.]"}
         }catch(e){sent=text+"\n\n[The web lookup failed. Say the net link is down, and do not invent facts.]"}
       }
     }
+    const rc=recall(text);
+    if(rc&&!src)sent+="\n\n[From your memory: "+rc+"]";
     history.push({role:"user",content:sent});
     trim();
     if(src)out.parentNode.firstChild.textContent="VEGA // NET LINK ("+src+")";
+    else if(rc)out.parentNode.firstChild.textContent="VEGA // MEMORY RECALL";
     out.textContent="…";
     const stream=await engine.chat.completions.create({messages:history,stream:true,temperature:0.85,max_tokens:300});
     for await(const c of stream){
+      if(dead)break;
       reply+=c.choices[0]?.delta?.content||"";
       out.textContent=reply;log.scrollTop=log.scrollHeight;
     }
+    if(dead)return;
     history.push({role:"assistant",content:reply});
+    if(memOn&&reply){mem.chat.push({r:"user",c:text.slice(0,400)},{r:"assistant",c:reply.slice(0,400)});while(mem.chat.length>20)mem.chat.splice(0,2);saveMem()}
     speak(reply);
   }catch(err){
     out.textContent="Signal lost: "+err.message+". Transmit again.";
