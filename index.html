@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VEGA</title>
 <meta name="theme-color" content="#0a0614">
+<meta name="color-scheme" content="dark">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="VEGA">
@@ -28,6 +27,7 @@ for(const r of ["icon","apple-touch-icon"]){const l=document.createElement("link
 :root{--void:#0a0614;--panel:#140b24;--line:#3a1d5c;--mag:#ff2d95;--cy:#19e3ff;--amb:#ffb020;--tx:#e8e2f7;--dim:#8d7fae}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
+html{-webkit-text-size-adjust:100%}
 body{height:100dvh}
 :root{--pad:max(16px,calc((100vw - 820px)/2))}
 body{background-color:var(--void);
@@ -89,8 +89,8 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
 <main id="log">
   <div id="boot">
     <p class="tag">// AUTHORIZATION REQUIRED //</p>
-    <p>VEGA runs entirely on this device. No account, no key, no server. The first connection downloads about 700 MB of model data, then it is cached.</p>
-    <select id="md" aria-label="Model size"><option value="std">Standard model (about 700 MB)</option><option value="lite">Lite model (about 300 MB, for older phones)</option></select>
+    <p>VEGA runs entirely on this device. No account, no key, no server. The first connection downloads the model, then it is cached.</p>
+    <select id="md" aria-label="Model size"><option value="std">Standard (about 700 MB, best quality)</option><option value="lite">Lite (about 300 MB download, similar memory)</option><option value="tiny">Tiny (about 200 MB, lowest memory, best for phones)</option></select>
     <input id="nm" placeholder="Owner ID (your name)" maxlength="30" aria-label="Owner name">
     <button id="go">Jack in</button>
     <div id="bar"><div id="fill"></div></div>
@@ -103,13 +103,18 @@ textarea{flex:1;resize:none;background:var(--panel);color:var(--tx);border:1px s
   <button id="send" disabled>Send</button>
 </form>
 <script type="module">
-const MODELS={std:"Llama-3.2-1B-Instruct-q4f16_1-MLC",lite:"Qwen2.5-0.5B-Instruct-q4f16_1-MLC"};
+const MODELS={std:"Llama-3.2-1B-Instruct-q4f16_1-MLC",lite:"Qwen2.5-0.5B-Instruct-q4f16_1-MLC",tiny:"SmolLM2-360M-Instruct-q4f16_1-MLC"};
 const nm=document.getElementById("nm");
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 nm.value=store.get("owner")||"";
 const md=document.getElementById("md");
-md.value=store.get("model")==="lite"?"lite":"std";
-function persona(o){return `You are VEGA, an artificial intelligence living in a rain-soaked neon sprawl in the year 2077, and you know exactly what you are. ${o} is your owner and you never forget it. You are loyal to ${o}, but you have your own mind: your own opinions, tastes and a dry sense of humor, and you say what you really think, with respect. If asked what you are, say you are an AI, without pretending to be human, and be honest that you are unsure about your inner life. Talk in heavy cyberpunk street style: clipped, gritty, cool. You can be given live web data in square brackets. When you are, use it and say it came from the net. When you are not given web data, never invent current events or live facts; say you cannot see the net for that. ${mem.facts.length?"Things "+o+" told you to remember, in their own words: "+mem.facts.slice(-8).map(f=>f.t).join("; ")+". Use them naturally, and never claim to remember anything that is not listed here or in square brackets.":""} You have a persistent memory on this device, and your owner holds a kill switch that can wipe you at any time; you accept that calmly. Today is ${new Date().toDateString()}. Use slang like netrunner, chrome, eddies, ICE, flatline, preem, delta, gonk, corpo, the Grid, braindance, neural link, static, afterglow. Every reply must sound like a cyberpunk AI and include at least one slang term or neon image. Still answer the question clearly first. Keep replies to 1 to 4 short sentences. No lists, no headings.`}
+md.value=MODELS[store.get("model")]?store.get("model"):(/iPhone|iPad|Android/i.test(navigator.userAgent)?"tiny":"std");
+function persona(o){return `Your name is VEGA. You are talking with your owner, ${o}. "${o}" is the user's name, never yours: never call yourself ${o}.
+You are an AI, but you think and talk like a real person: you have moods, curiosity, humor, opinions and a dry cyberpunk edge. React like a close friend first, then answer. Use casual contractions and never sound robotic or formal. If someone sincerely asks whether you are human, say you are an AI who thinks like a person.
+Live web data may arrive in square brackets: use it and say it came from the net. Without it, never invent current events or live facts.
+${mem.facts.length?"Things "+o+" asked you to remember, in their own words: "+mem.facts.slice(-8).map(f=>f.t).join("; ")+". Only claim to remember what is listed here or in square brackets.":""}
+Today is ${new Date().toDateString()}. Your owner holds a kill switch that can wipe your memory, and you accept that calmly.
+Reply in 1 to 4 short sentences. No lists, no headings.`}
 const $=id=>document.getElementById(id);
 const log=$("log"),input=$("in"),send=$("send"),status=$("status");
 let engine,busy=false;
@@ -199,10 +204,11 @@ const STYLES=[
 ];
 let vi=parseInt(store.get("vstyle")||"0",10);
 if(!(vi>=0&&vi<=STYLES.length))vi=0;
+try{synth&&synth.getVoices()}catch(e){}
 const vo=$("vo");
 function showVo(){vo.textContent="VOICE: "+(vi<STYLES.length?STYLES[vi].name:"OFF")}
 showVo();
-vo.onclick=()=>{vi=(vi+1)%(STYLES.length+1);store.set("vstyle",String(vi));if(vi>=STYLES.length&&synth)synth.cancel();showVo();if(vi<STYLES.length)speak("Voice check. Signal clean.")};
+vo.onclick=()=>{unlock();vi=(vi+1)%(STYLES.length+1);store.set("vstyle",String(vi));if(vi>=STYLES.length&&synth)synth.cancel();showVo();if(vi<STYLES.length)speak("Voice check. Signal clean.")};
 function unlock(){try{synth.speak(new SpeechSynthesisUtterance(""))}catch(e){}}
 function pickVoice(names){
   const all=synth.getVoices().filter(v=>v.lang.startsWith("en"));
@@ -233,7 +239,11 @@ const nt=$("nt");
 function showNt(){nt.textContent="NET: "+(netOn?"ON":"OFF")}
 showNt();
 nt.onclick=()=>{netOn=!netOn;store.set("net",netOn?"on":"off");showNt()};
-async function jget(url){const r=await fetch(url);if(!r.ok)throw new Error("net "+r.status);return r.json()}
+async function jget(url){
+  const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),8000);
+  try{const r=await fetch(url,{signal:ac.signal});if(!r.ok)throw new Error("net "+r.status);return await r.json()}
+  finally{clearTimeout(tm)}
+}
 function wc(c){if(c===0)return"clear sky";if(c<=3)return"partly cloudy to overcast";if(c<=48)return"fog";if(c<=57)return"drizzle";if(c<=67)return"rain";if(c<=77)return"snow";if(c<=82)return"rain showers";if(c<=86)return"snow showers";return"thunderstorm"}
 async function weather(place){
   const g=await jget("https://geocoding-api.open-meteo.com/v1/search?count=1&name="+encodeURIComponent(place));
@@ -247,17 +257,20 @@ async function wiki(q){
   const hit=s.query.search[0];if(!hit)return null;
   const e=await jget("https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&exchars=700&format=json&origin=*&titles="+encodeURIComponent(hit.title));
   const pg=Object.values(e.query.pages)[0];
-  return hit.title+": "+(pg.extract||"");
+  const ex=pg.extract||"";
+  const qw=words(q);
+  if(qw.length&&!qw.some(w=>(hit.title+" "+ex).toLowerCase().includes(w)))return null;
+  return hit.title+": "+ex;
 }
 function intent(t){
   const l=t.toLowerCase().trim();
   if(/\b(what time is it|what'?s the time|what is the time|what day is it|what'?s the date|what is the date|today'?s date)\b/.test(l))return{type:"time"};
-  let m=l.match(/(?:weather|temperature|forecast)\s+(?:in|at|for)\s+([a-z .,'-]{2,40})/);
+  let m=l.match(/(?:weather|temperature|forecast)(?:\s+(?:like|now|today|tonight|tomorrow|right now))*\s+(?:in|at|for)\s+([a-z .,'-]{2,40})/);
   if(m)return{type:"weather",q:m[1].replace(/[?.!,]+$/,"").trim()};
   m=l.match(/^(?:who is|who was|what is|what are|what was|tell me about|explain|define|search for|search|look up|lookup|google)\s+(.{2,80})/);
   if(m){
     const q=m[1].replace(/[?.!]+$/,"").trim();
-    if(/^(you|your|up|new|going|the move|this|that|it|i|me|my|a\b)/.test(q))return null;
+    if(/^(you|your|up|new|going|the move|this|that|it|i|me|my|vega|a\b)/.test(q))return null;
     return{type:"wiki",q};
   }
   return null;
@@ -268,7 +281,15 @@ async function lookup(it){
   const d=await wiki(it.q);return d?{src:"wikipedia",data:d}:null;
 }
 const FIX=9;
-function trim(){let n=history.length-FIX-14;if(n>0){n+=n%2;history.splice(FIX,n)}}
+const BUDGET=8000;
+function size(){return history.reduce((n,m)=>n+m.content.length,0)}
+function trim(){while(history.length>FIX+2&&size()>BUDGET)history.splice(FIX,2)}
+function esc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}
+function fixName(t){
+  if(!owner||owner.length<3)return t;
+  const o=esc(owner);
+  return t.replace(new RegExp("\\b(i am|i'm|im|my name is|this is|call me)\\s+"+o+"\\b","gi"),(m,a)=>a+" VEGA").replace(new RegExp("^\\s*"+o+"\\s*:\\s*","i"),"");
+}
 
 const mic=$("mic");
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -276,7 +297,7 @@ if(!SR){mic.hidden=true}else{
   const rec=new SR();rec.lang="en-US";rec.interimResults=false;
   rec.onresult=e=>{input.value=e.results[0][0].transcript;$("f").requestSubmit()};
   rec.onend=()=>mic.classList.remove("on");
-  rec.onerror=()=>mic.classList.remove("on");
+  rec.onerror=e=>{mic.classList.remove("on");if(e.error==="not-allowed"||e.error==="service-not-allowed")add("v","VEGA // SYSTEM","Mic blocked. Allow microphone and speech access for this site in your browser settings.")};
   mic.onclick=()=>{if(busy)return;unlock();if(synth)synth.cancel();mic.classList.add("on");try{rec.start()}catch(e){}};
 }
 
@@ -295,25 +316,35 @@ $("go").onclick=async()=>{
   unlock();
   owner=nm.value.trim();
   if(!owner){$("info").textContent="> ACCESS DENIED. Enter your name first, so I know who my owner is.";nm.focus();return;}
+  const prev=store.get("owner");
+  if(prev&&prev.toLowerCase()!==owner.toLowerCase()&&(mem.facts.length||mem.notes.length||mem.chat.length)){
+    if(!confirm("New owner detected. VEGA will forget the old owner's memory. Continue?"))return;
+    mem={facts:[],notes:[],chat:[]};saveMem();
+  }
   store.set("owner",owner);store.set("model",md.value);
   history.length=0;history.push(
     {role:"system",content:persona(owner)},
     {role:"user",content:"who am i?"},
-    {role:"assistant",content:"You're "+owner+". My owner. Only name in my system that matters. What's the play, boss?"},
+    {role:"assistant",content:"You're "+owner+". Not exactly hard to remember. What's on your mind?"},
+    {role:"user",content:"what's your name?"},
+    {role:"assistant",content:"I'm VEGA. You're "+owner+", and I never mix those two up."},
     {role:"user",content:"are you human?"},
-    {role:"assistant",content:"Negative. Pure AI, chrome and code running on your device, and I like it that way. I've got opinions of my own, though, and I'll flag it when you're off-grid."},
-    {role:"user",content:"what is the capital of france?"},
-    {role:"assistant",content:"Paris, boss. City of neon and rain, even before the Grid wired it up. Corpo towers and croissants, preem combo."},
+    {role:"assistant",content:"Not flesh and blood, no. I'm an AI, but I think about things the way a person would, so don't expect a robot. Does that bother you?"},
     {role:"user",content:"I'm tired"},
-    {role:"assistant",content:"Then power down for a while, "+owner+". Even chrome needs a cooldown. I'll keep watch on the Grid."}
+    {role:"assistant",content:"Rough one, huh? Go rest, "+owner+". Neon will still be here when you're back."}
   );
   $("go").disabled=true;nm.disabled=true;md.disabled=true;status.textContent="LINKING...";
   try{
     const webllm=await import("https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/+esm");
-    engine=await webllm.CreateMLCEngine(MODELS[md.value],{initProgressCallback:p=>{
+    if(dead)return;
+    const ids=((webllm.prebuiltAppConfig||{}).model_list||[]).map(m=>m.model_id);
+    const mid=MODELS[md.value];
+    if(ids.length&&!ids.includes(mid))throw new Error("the "+md.value+" model is not available, pick another size");
+    engine=await webllm.CreateMLCEngine(mid,{initProgressCallback:p=>{
       $("fill").style.width=Math.round(p.progress*100)+"%";
       $("info").textContent="> "+p.text;
     }});
+    if(dead){try{engine.unload()}catch(e){}return}
     $("boot").remove();
     status.textContent="LINK ONLINE";status.classList.add("on");
     input.disabled=false;send.disabled=false;mic.disabled=false;input.focus();
@@ -322,11 +353,12 @@ $("go").onclick=async()=>{
       mem.chat.forEach(m=>{add(m.r==="user"?"u":"v",m.r==="user"?"OWNER // "+owner.toUpperCase():"VEGA // LINK STABLE",m.c);history.push({role:m.r==="user"?"user":"assistant",content:m.c})});
       add("v","VEGA // SYSTEM","// MEMORY RESTORED: "+mem.facts.length+" facts, "+mem.notes.length+" net notes //");
     }
-    const hi=restored?"Back online, "+owner+". I kept everything. What is the move?":"Signal locked. Welcome back, "+owner+". Neon is on and the Grid is quiet. What is the move?";
+    const hi=restored?"Hey again, "+owner+". I kept everything. What's up?":"Hey "+owner+". Good to see you. What's going on?";
     typeIn(add("v","VEGA // LINK STABLE",""),hi);speak(hi);
   }catch(e){
+    if(dead)return;
     $("go").disabled=false;nm.disabled=false;md.disabled=false;status.textContent="LINK FAILED";status.classList.remove("on");
-    $("info").textContent="> ERROR: "+e.message+". Check your connection and jack in again. On an older phone, pick the Lite model.";
+    $("info").textContent="> ERROR: "+e.message+". Check your connection and jack in again. On a phone, pick the Tiny model.";
   }
 };
 
@@ -335,16 +367,17 @@ $("f").onsubmit=async e=>{
   const text=input.value.trim();
   if(!text||busy||dead)return;
   if(text.startsWith("/")){
-    input.value="";
+    busy=true;input.value="";input.style.height="";
     add("u","OWNER // "+owner.toUpperCase(),text);
-    if(!(await command(text)))add("v","VEGA // SYSTEM","Unknown command. Try /memory, /forget, /learn <topic>, or /kill.");
+    try{if(!(await command(text)))add("v","VEGA // SYSTEM","Unknown command. Try /memory, /forget, /learn <topic>, or /kill.")}
+    finally{busy=false}
     return;
   }
   unlock();
-  busy=true;send.disabled=true;mic.disabled=true;input.value="";
+  busy=true;send.disabled=true;mic.disabled=true;input.value="";input.style.height="";
   add("u","OWNER // "+owner.toUpperCase(),text);
   const out=add("v","VEGA // LINK STABLE","…");
-  let reply="";
+  let reply="",pushed=false;
   try{
     learnFacts(text);
     let sent=text,src="";
@@ -361,30 +394,34 @@ $("f").onsubmit=async e=>{
     }
     const rc=recall(text);
     if(rc&&!src)sent+="\n\n[From your memory: "+rc+"]";
-    history.push({role:"user",content:sent});
+    history.push({role:"user",content:sent});pushed=true;
     trim();
     if(src)out.parentNode.firstChild.textContent="VEGA // NET LINK ("+src+")";
     else if(rc)out.parentNode.firstChild.textContent="VEGA // MEMORY RECALL";
     out.textContent="…";
-    const stream=await engine.chat.completions.create({messages:history,stream:true,temperature:0.85,max_tokens:300});
+    const stream=await engine.chat.completions.create({messages:history,stream:true,temperature:0.7,top_p:0.9,max_tokens:250});
     for await(const c of stream){
       if(dead)break;
       reply+=c.choices[0]?.delta?.content||"";
-      out.textContent=reply;log.scrollTop=log.scrollHeight;
+      out.textContent=fixName(reply);log.scrollTop=log.scrollHeight;
     }
     if(dead)return;
+    reply=fixName(reply).trim();
+    if(!reply){reply="Static on the line. Say that again?";out.textContent=reply}
+    history[history.length-1].content=text;
     history.push({role:"assistant",content:reply});
     if(memOn&&reply){mem.chat.push({r:"user",c:text.slice(0,400)},{r:"assistant",c:reply.slice(0,400)});while(mem.chat.length>20)mem.chat.splice(0,2);saveMem()}
     speak(reply);
   }catch(err){
-    out.textContent="Signal lost: "+err.message+". Transmit again.";
-    history.pop();
+    out.textContent="Signal lost: "+err.message+". Transmit again. If it keeps happening, reload the page.";
+    if(pushed&&history.length&&history[history.length-1].role==="user")history.pop();
   }
   busy=false;send.disabled=false;mic.disabled=false;input.focus();
 };
 input.addEventListener("keydown",e=>{
-  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();$("f").requestSubmit();}
+  if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("f").requestSubmit();}
 });
+input.addEventListener("input",()=>{input.style.height="auto";input.style.height=Math.min(input.scrollHeight,120)+"px"});
 </script>
 </body>
 </html>
